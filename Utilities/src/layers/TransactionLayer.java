@@ -9,7 +9,7 @@ public abstract class TransactionLayer {
 	
 	public UserLayer ul;
 	public TransportLayer transportLayer;
-	
+
 	public UserLayer getUl() {
 		return ul;
 	}

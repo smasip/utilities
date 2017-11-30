@@ -62,6 +62,8 @@ public enum ServerStateUA {
 	TERMINATED{
 		@Override
 		public ServerStateUA processMessage(SIPMessage message, TransactionLayer tl) {
+			System.out.println("TERMINATED");
+			System.out.println(message.toStringMessage());
 			return this;
 		}
 		

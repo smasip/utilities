@@ -14,12 +14,12 @@ public enum ClientStateUA {
 			if(message instanceof InviteMessage) {
 				try {
 					((TransactionLayerUA) tl).sendToTransport(message);
+					return this;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				return this;
 			}else if (message instanceof TryingMessage || 
-					  message instanceof RingingMessage) {
+			    message instanceof RingingMessage) {
 				return PROCEEDING;
 			}else if (message instanceof OKMessage) {
 				return TERMINATED;
@@ -67,6 +67,8 @@ public enum ClientStateUA {
 	TERMINATED{
 		@Override
 		public ClientStateUA processMessage(SIPMessage message, TransactionLayer tl) {
+			System.out.println("TERMINATED");
+			System.out.println(message.toStringMessage());
 			return this;
 		}
 		

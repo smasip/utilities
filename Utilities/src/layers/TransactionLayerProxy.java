@@ -25,13 +25,15 @@ public class TransactionLayerProxy extends TransactionLayer{
 	
 	public TransactionLayerProxy() {
 		super();
-		this.client = null;
-		this.server = null;
+		this.client = ClientStateProxy.TERMINATED;
+		this.server = ServerStateProxy.TERMINATED;
 	}
 
 	@Override
 	public void recvFromTransport(SIPMessage message) {
-		if(client == null && server == null) {
+		if(client == ClientStateProxy.TERMINATED && 
+		   server == ServerStateProxy.TERMINATED) 
+		{
 			if (message instanceof InviteMessage) {
 				String[] s = message.getVias().get(0).split(":");
 				InetAddress address;
@@ -40,27 +42,35 @@ public class TransactionLayerProxy extends TransactionLayer{
 					int port = Integer.valueOf(s[1]);
 					byte[] buf = new byte[1024];
 					pServer = new DatagramPacket(buf, buf.length, address, port);
-					//currentCallID =
 					server = ServerStateProxy.PROCEEDING;
 					server.processMessage(message, this);
+					//currentCallID =
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-		}else if(server != null && client != null) {
+		}
+		else if(client != ClientStateProxy.TERMINATED && 
+				server != ServerStateProxy.TERMINATED) 
+		{
 			client.processMessage(message, this);
 		}
 	}
 
 	public void recvFromUser(SIPMessage message, DatagramPacket p) {
-		if(client == null && server != null) {
+		if(client == ClientStateProxy.TERMINATED && 
+		   server != ServerStateProxy.TERMINATED) 
+		{
 			if (message instanceof InviteMessage) {
 				pClient = p;
 				client = ClientStateProxy.CALLING;
 				client.processMessage(message, this);
 			}
-		}else if(server != null && client != null) {
+		}
+		else if(client != ClientStateProxy.TERMINATED && 
+				server != ServerStateProxy.TERMINATED) 
+		{
 			server.processMessage(message, this);
 		}
 	}

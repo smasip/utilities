@@ -15,6 +15,13 @@ public class TransactionLayerUA extends TransactionLayer{
 	ServerStateUA server;
 	String currentCallID;
 	
+	public TransactionLayerUA() {
+		super();
+		this.client = ClientStateUA.TERMINATED;
+		this.server = ServerStateUA.TERMINATED;
+	}
+	
+	
 	public String getCurrentCallID() {
 		return currentCallID;
 	}
@@ -23,11 +30,6 @@ public class TransactionLayerUA extends TransactionLayer{
 		this.currentCallID = currentCallID;
 	}
 
-	public TransactionLayerUA() {
-		super();
-		this.client = null;
-		this.server = null;
-	}
 
 	public DatagramPacket getpProxy() {
 		return pProxy;
@@ -39,12 +41,17 @@ public class TransactionLayerUA extends TransactionLayer{
 
 	@Override
 	public void recvFromTransport(SIPMessage message) {
-		if(client == null && server == null) {
+		if(client == ClientStateUA.TERMINATED && 
+		   server == ServerStateUA.TERMINATED) 
+		{
 			if (message instanceof InviteMessage) {
 				server = ServerStateUA.PROCEEDING;
 				server.processMessage(message, this);
+				//currentCallID=
 			}
-		}else if(server == null) {
+		}
+		else if(server == ServerStateUA.TERMINATED) 
+		{
 			if (!(message instanceof InviteMessage)) {
 				client.processMessage(message, this);
 			}
@@ -52,12 +59,17 @@ public class TransactionLayerUA extends TransactionLayer{
 	}
 
 	public void recvFromUser(SIPMessage message) {
-		if(client == null && server == null) {
+		if(client == ClientStateUA.TERMINATED && 
+		   server == ServerStateUA.TERMINATED) 
+		{
 			if (message instanceof InviteMessage) {
 				client = ClientStateUA.CALLING;
 				client.processMessage(message, this);
+				//currentCallID =
 			}
-		}else if(client == null) {
+		}
+		else if(client == ClientStateUA.TERMINATED) 
+		{
 			if (!(message instanceof InviteMessage)) {
 				server.processMessage(message, this);
 			}
@@ -68,6 +80,13 @@ public class TransactionLayerUA extends TransactionLayer{
 		byte[] buf = message.toStringMessage().getBytes();
 		pProxy.setData(buf, 0, buf.length);
 		transportLayer.sendToNetwork(pProxy);
+	}
+	
+	
+	public void resetLayer() {
+		client = ClientStateUA.TERMINATED;
+		server  = ServerStateUA.TERMINATED;
+		currentCallID = null;
 	}
 
 

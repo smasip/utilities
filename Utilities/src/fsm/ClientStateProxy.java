@@ -14,10 +14,10 @@ public enum ClientStateProxy {
 			if(message instanceof InviteMessage) {
 				try {
 					((TransactionLayerProxy)tl).sendToTransportClient(message);
+					return this;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				return this;
 			}else if (message instanceof RingingMessage) {
 				tl.sendToUser(message);
 				return PROCEEDING;
@@ -65,6 +65,8 @@ public enum ClientStateProxy {
 	TERMINATED{
 		@Override
 		public ClientStateProxy processMessage(SIPMessage message, TransactionLayer tl) {
+			System.out.println("TERMINATED");
+			System.out.println(message.toStringMessage());
 			return this;
 		}
 		

@@ -27,10 +27,10 @@ public enum ServerStateProxy {
 					TryingMessage tryingMessage = (TryingMessage) SIPMessage.createResponse(SIPMessage._100_TRYING, message);
 					((TransactionLayerProxy) tl).sendToTransportServer(tryingMessage);
 					tl.sendToUser(message);
+					return this;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				return this;
 			}else if (message instanceof RingingMessage) {
 				try {
 					((TransactionLayerProxy) tl).sendToTransportServer(message);
@@ -63,6 +63,8 @@ public enum ServerStateProxy {
 	TERMINATED{
 		@Override
 		public ServerStateProxy processMessage(SIPMessage message, TransactionLayer tl) {
+			System.out.println("TERMINATED");
+			System.out.println(message.toStringMessage());
 			return this;
 		}
 		

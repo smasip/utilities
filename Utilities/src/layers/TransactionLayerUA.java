@@ -2,6 +2,7 @@ package layers;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 
 import fsm.ClientStateUA;
 import fsm.ServerStateUA;
@@ -10,7 +11,8 @@ import mensajesSIP.SIPMessage;
 
 public class TransactionLayerUA extends TransactionLayer{
 	
-	DatagramPacket pProxy;
+	InetAddress addressProxy;
+	int portProxy;
 	ClientStateUA client;
 	ServerStateUA server;
 	String currentCallID;
@@ -29,15 +31,27 @@ public class TransactionLayerUA extends TransactionLayer{
 	public void setCurrentCallID(String currentCallID) {
 		this.currentCallID = currentCallID;
 	}
-
-
-	public DatagramPacket getpProxy() {
-		return pProxy;
+	
+	
+	public InetAddress getAddressProxy() {
+		return addressProxy;
 	}
 
-	public void setpProxy(DatagramPacket pProxy) {
-		this.pProxy = pProxy;
+
+	public void setAddressProxy(InetAddress addressProxy) {
+		this.addressProxy = addressProxy;
 	}
+
+
+	public int getPortProxy() {
+		return portProxy;
+	}
+
+
+	public void setPortProxy(int portProxy) {
+		this.portProxy = portProxy;
+	}
+
 
 	@Override
 	public void recvFromTransport(SIPMessage message) {
@@ -77,9 +91,7 @@ public class TransactionLayerUA extends TransactionLayer{
 	}
 	
 	public void sendToTransport(SIPMessage message) throws IOException {
-		byte[] buf = message.toStringMessage().getBytes();
-		pProxy.setData(buf, 0, buf.length);
-		transportLayer.sendToNetwork(pProxy);
+		transportLayer.sendToNetwork(addressProxy, portProxy, message);
 	}
 	
 	

@@ -3,15 +3,15 @@ package layers;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 import mensajesSIP.SIPException;
 import mensajesSIP.SIPMessage;
 
-public class TransportLayer {
+public abstract class TransportLayer {
 	
-	private DatagramSocket datagramSocket;
-	private TransactionLayer transactionLayer;
-	
+	DatagramSocket datagramSocket;
+	TransactionLayer transactionLayer;
 	
 	public DatagramSocket getDatagramSocket() {
 		return datagramSocket;
@@ -29,12 +29,13 @@ public class TransportLayer {
 		this.transactionLayer = transactionLayer;
 	}
 
-	public void recvFromNetwork(DatagramPacket p) throws SIPException {
-		SIPMessage message = SIPMessage.parseMessage(new String(p.getData()));
-		transactionLayer.recvFromTransport(message);
-	}
+	public abstract void recvFromNetwork();
 	
-	public void sendToNetwork(DatagramPacket p) throws IOException {
+	public void sendToNetwork(InetAddress address, int port, SIPMessage message) throws IOException {
+		byte[] buf = message.toStringMessage().getBytes();
+		DatagramPacket p = new DatagramPacket(buf, buf.length);
+		p.setAddress(address);
+		p.setPort(port);
 		datagramSocket.send(p);
 	}
 

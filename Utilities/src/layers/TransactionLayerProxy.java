@@ -15,14 +15,30 @@ import mensajesSIP.SIPMessage;
 
 public class TransactionLayerProxy extends TransactionLayer{
 	
-	DatagramPacket pClient;
-	DatagramPacket pServer;
+	InetAddress addressClient;
+	InetAddress addressServer;
+	int portClient;
+	int portServer;
 	ClientStateProxy client;
 	ServerStateProxy server;
 	String currentCallID;
 	
-	
-	
+	public InetAddress getAddressClient() {
+		return addressClient;
+	}
+
+	public void setAddressClient(InetAddress addressClient) {
+		this.addressClient = addressClient;
+	}
+
+	public int getPortClient() {
+		return portClient;
+	}
+
+	public void setPortClient(int portClient) {
+		this.portClient = portClient;
+	}
+
 	public TransactionLayerProxy() {
 		super();
 		this.client = ClientStateProxy.TERMINATED;
@@ -38,10 +54,8 @@ public class TransactionLayerProxy extends TransactionLayer{
 				String[] s = message.getVias().get(0).split(":");
 				InetAddress address;
 				try {
-					address = InetAddress.getByName(s[0]);
-					int port = Integer.valueOf(s[1]);
-					byte[] buf = new byte[1024];
-					pServer = new DatagramPacket(buf, buf.length, address, port);
+					addressServer = InetAddress.getByName(s[0]);
+					portServer = Integer.valueOf(s[1]);
 					server = ServerStateProxy.PROCEEDING;
 					server.processMessage(message, this);
 					//currentCallID =
@@ -58,12 +72,11 @@ public class TransactionLayerProxy extends TransactionLayer{
 		}
 	}
 
-	public void recvFromUser(SIPMessage message, DatagramPacket p) {
+	public void recvFromUser(SIPMessage message) {
 		if(client == ClientStateProxy.TERMINATED && 
 		   server != ServerStateProxy.TERMINATED) 
 		{
 			if (message instanceof InviteMessage) {
-				pClient = p;
 				client = ClientStateProxy.CALLING;
 				client.processMessage(message, this);
 			}
@@ -75,16 +88,14 @@ public class TransactionLayerProxy extends TransactionLayer{
 		}
 	}
 	
+	
+	
 	public void sendToTransportClient(SIPMessage message) throws IOException {
-		byte[] buf = message.toStringMessage().getBytes();
-		pClient.setData(buf, 0, buf.length);
-		transportLayer.sendToNetwork(pClient);
+		transportLayer.sendToNetwork(addressClient, portClient, message);
 	}
 	
 	public void sendToTransportServer(SIPMessage message) throws IOException {
-		byte[] buf = message.toStringMessage().getBytes();
-		pServer.setData(buf, 0, buf.length);
-		transportLayer.sendToNetwork(pServer);
+		transportLayer.sendToNetwork(addressServer, portServer, message);
 	}
 
 }

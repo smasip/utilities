@@ -11,12 +11,9 @@ public abstract class UserLayer {
 		return transactionLayer;
 	}
 
-
-
 	public void setTransactionLayer(TransactionLayer transactionLayer) {
 		this.transactionLayer = transactionLayer;
 	}
-
 
 
 	public abstract void recvFromTransaction(SIPMessage message);

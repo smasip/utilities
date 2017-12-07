@@ -16,6 +16,7 @@ public class TransactionLayerUA extends TransactionLayer{
 	ClientStateUA client;
 	ServerStateUA server;
 	String currentCallID;
+	Transaction currentTransaction;
 	
 	public TransactionLayerUA() {
 		super();
@@ -55,6 +56,22 @@ public class TransactionLayerUA extends TransactionLayer{
 
 	@Override
 	public void recvFromTransport(SIPMessage message) {
+		
+		switch (currentTransaction) {
+		case REGISTER_TRANSACTION:
+			
+			break;
+			
+		case INVITE_TRANSACTION:
+			break;
+			
+		case NO_TRANSACTION:
+			
+			break;
+		default:
+			break;
+		}
+		
 		if(client == ClientStateUA.TERMINATED && 
 		   server == ServerStateUA.TERMINATED) 
 		{

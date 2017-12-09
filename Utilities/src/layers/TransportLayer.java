@@ -10,8 +10,8 @@ import mensajesSIP.SIPMessage;
 
 public abstract class TransportLayer {
 	
-	DatagramSocket datagramSocket;
-	TransactionLayer transactionLayer;
+	public DatagramSocket datagramSocket;
+	public TransactionLayer transactionLayer;
 	
 	public DatagramSocket getDatagramSocket() {
 		return datagramSocket;

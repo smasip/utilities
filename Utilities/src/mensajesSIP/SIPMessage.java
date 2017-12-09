@@ -28,6 +28,8 @@ public abstract class SIPMessage{
     public static final int _100_TRYING = 100;
     public static final int _180_RINGING = 180;
     public static final int _200_OK = 200;
+    public static final int _404_NOT_FOUND = 404;
+    public static final int _486_BUSY_HERE = 468;
     
 /**
  * Convierte el mensaje en un String. Para ello concatena la información de las cabeceras del mensaje.
@@ -640,6 +642,7 @@ public abstract class SIPMessage{
     	 String callId = request.getCallId();
     	 String cSeqNumber = request.getcSeqNumber();
     	 String cSeqStr = request.getcSeqStr();
+    	 String contact;
     	 SIPMessage response;
     	 
     	switch (statusCode) {
@@ -649,16 +652,10 @@ public abstract class SIPMessage{
 				break;	
 			case _180_RINGING:
 				response = new RingingMessage();
-//				if(request instanceof InviteMessage) {
-//					String contact;
-//					contact  = ((InviteMessage)request).getContact();
-//					((OKMessage)response).setContact(contact);
-//				}
 				((RingingMessage)response).setContentLength(0);
 				break;
 			case _200_OK:
 				response = new OKMessage();
-				String contact;
 				((OKMessage)response).setContentLength(0);
 				((OKMessage)response).setExpires("7200");
 				if(request instanceof InviteMessage) {
@@ -668,6 +665,23 @@ public abstract class SIPMessage{
 					contact  = ((RegisterMessage)request).getContact();
 					((OKMessage)response).setContact(contact);
 				}
+				break;
+			case _404_NOT_FOUND:
+				response = new NotFoundMessage();
+				((NotFoundMessage)response).setContentLength(0);
+				((NotFoundMessage)response).setExpires("7200");
+				if(request instanceof InviteMessage) {
+					contact  = ((InviteMessage)request).getContact();
+					((NotFoundMessage)response).setContact(contact);
+				}else if(request instanceof RegisterMessage) {
+					contact  = ((RegisterMessage)request).getContact();
+					((NotFoundMessage)response).setContact(contact);
+				}
+				
+				break;
+			case _486_BUSY_HERE:
+				response = new BusyHereMessage();
+				((BusyHereMessage)response).setContentLength(0);
 				break;
 			default:
 				response = null;

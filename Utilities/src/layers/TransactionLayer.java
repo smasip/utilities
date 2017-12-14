@@ -31,5 +31,11 @@ public abstract class TransactionLayer {
 	public void sendToUser(SIPMessage message) {
 		ul.recvFromTransaction(message);
 	}
+	
+	public abstract void sendACK(SIPMessage error);
+	
+	public abstract void sendError(SIPMessage error);
+	
+	public abstract void cancelTimer();
 
 }

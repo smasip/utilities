@@ -30,6 +30,7 @@ public abstract class SIPMessage{
     public static final int _200_OK = 200;
     public static final int _404_NOT_FOUND = 404;
     public static final int _486_BUSY_HERE = 468;
+    public static final int _408_REQUEST_TIMEOUT = 408;
     
 /**
  * Convierte el mensaje en un String. Para ello concatena la información de las cabeceras del mensaje.
@@ -633,8 +634,7 @@ public abstract class SIPMessage{
             throw new SIPException("Incorrect ProxyAuthentication format");
         }
     }
-
-
+    
     public static SIPMessage createResponse(int statusCode, SIPMessage request) {
     	 ArrayList<String> vias = request.getVias();
     	 String toUri = request.getToUri();
@@ -683,6 +683,12 @@ public abstract class SIPMessage{
 				response = new BusyHereMessage();
 				((BusyHereMessage)response).setContentLength(0);
 				break;
+				
+			case _408_REQUEST_TIMEOUT:
+				response = new RequestTimeoutMessage();
+				((RequestTimeoutMessage)response).setContentLength(0);
+				break;
+				
 			default:
 				response = null;
 				break;

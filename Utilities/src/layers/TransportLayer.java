@@ -32,6 +32,8 @@ public abstract class TransportLayer {
 	public abstract void recvFromNetwork();
 	
 	public void sendToNetwork(InetAddress address, int port, SIPMessage message) throws IOException {
+		System.out.println("Sended Message:");
+		System.out.println(message.toStringMessage());
 		byte[] buf = message.toStringMessage().getBytes();
 		DatagramPacket p = new DatagramPacket(buf, buf.length);
 		p.setAddress(address);

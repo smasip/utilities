@@ -31,6 +31,7 @@ public abstract class SIPMessage{
     public static final int _404_NOT_FOUND = 404;
     public static final int _486_BUSY_HERE = 468;
     public static final int _408_REQUEST_TIMEOUT = 408;
+    public static final int _503_SERVICE_UNABAILABLE = 503;
     
 /**
  * Convierte el mensaje en un String. Para ello concatena la información de las cabeceras del mensaje.
@@ -636,13 +637,28 @@ public abstract class SIPMessage{
     }
     
     public static SIPMessage createResponse(int statusCode, SIPMessage request) {
+    	String contact;
+    	SIPMessage response = null;
+    	
+    	if(request instanceof InviteMessage) {
+			contact  = ((InviteMessage)request).getContact();
+			response = createResponse(statusCode, request, contact);
+		}else if(request instanceof RegisterMessage) {
+			contact  = ((RegisterMessage)request).getContact();
+			response = createResponse(statusCode, request, contact);
+		}
+    	
+    	return response;
+    	
+    }
+    
+    public static SIPMessage createResponse(int statusCode, SIPMessage request, String contact) {
     	 ArrayList<String> vias = request.getVias();
     	 String toUri = request.getToUri();
     	 String fromUri = request.getFromUri();
     	 String callId = request.getCallId();
     	 String cSeqNumber = request.getcSeqNumber();
     	 String cSeqStr = request.getcSeqStr();
-    	 String contact;
     	 SIPMessage response;
     	 
     	switch (statusCode) {
@@ -650,35 +666,38 @@ public abstract class SIPMessage{
 				response = new TryingMessage();
 				((TryingMessage)response).setContentLength(0);
 				break;	
+				
 			case _180_RINGING:
 				response = new RingingMessage();
 				((RingingMessage)response).setContentLength(0);
 				break;
+				
 			case _200_OK:
+				
 				response = new OKMessage();
 				((OKMessage)response).setContentLength(0);
 				((OKMessage)response).setExpires("7200");
 				if(request instanceof InviteMessage) {
-					contact  = ((InviteMessage)request).getContact();
 					((OKMessage)response).setContact(contact);
 				}else if(request instanceof RegisterMessage) {
-					contact  = ((RegisterMessage)request).getContact();
 					((OKMessage)response).setContact(contact);
 				}
+				
 				break;
+				
 			case _404_NOT_FOUND:
+				
 				response = new NotFoundMessage();
 				((NotFoundMessage)response).setContentLength(0);
 				((NotFoundMessage)response).setExpires("7200");
 				if(request instanceof InviteMessage) {
-					contact  = ((InviteMessage)request).getContact();
 					((NotFoundMessage)response).setContact(contact);
 				}else if(request instanceof RegisterMessage) {
-					contact  = ((RegisterMessage)request).getContact();
 					((NotFoundMessage)response).setContact(contact);
 				}
 				
 				break;
+				
 			case _486_BUSY_HERE:
 				response = new BusyHereMessage();
 				((BusyHereMessage)response).setContentLength(0);
@@ -688,6 +707,10 @@ public abstract class SIPMessage{
 				response = new RequestTimeoutMessage();
 				((RequestTimeoutMessage)response).setContentLength(0);
 				break;
+				
+			case _503_SERVICE_UNABAILABLE:
+				response = new ServiceUnavailableMessage();
+				((ServiceUnavailableMessage)response).setContentLength(0);
 				
 			default:
 				response = null;

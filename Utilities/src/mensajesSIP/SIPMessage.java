@@ -659,6 +659,7 @@ public abstract class SIPMessage{
     	 String callId = request.getCallId();
     	 String cSeqNumber = request.getcSeqNumber();
     	 String cSeqStr = request.getcSeqStr();
+    	 String route;
     	 SIPMessage response;
     	 
     	switch (statusCode) {
@@ -670,14 +671,21 @@ public abstract class SIPMessage{
 			case _180_RINGING:
 				response = new RingingMessage();
 				((RingingMessage)response).setContentLength(0);
+				if(request instanceof InviteMessage) {
+					route = ((InviteMessage)request).getRecordRoute();
+					((RingingMessage)response).setRecordRoute(route);
+				}
 				break;
 				
 			case _200_OK:
 				
 				response = new OKMessage();
+ 
 				((OKMessage)response).setContentLength(0);
 				((OKMessage)response).setExpires("7200");
 				if(request instanceof InviteMessage) {
+					route = ((InviteMessage)request).getRecordRoute();
+					((OKMessage)response).setRecordRoute(route);
 					((OKMessage)response).setContact(contact);
 				}else if(request instanceof RegisterMessage) {
 					((OKMessage)response).setContact(contact);

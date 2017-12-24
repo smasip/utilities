@@ -689,6 +689,8 @@ public abstract class SIPMessage{
 					((OKMessage)response).setContact(contact);
 				}else if(request instanceof RegisterMessage) {
 					((OKMessage)response).setContact(contact);
+				}else if(request instanceof ByeMessage) {
+					((OKMessage)response).setContact(contact);
 				}
 				
 				break;

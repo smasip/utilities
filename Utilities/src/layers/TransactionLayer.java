@@ -13,8 +13,21 @@ public abstract class TransactionLayer {
 	public TransportLayer transportLayer;
 	public InetAddress requestAddress;
 	public int requestPort;
-
+	public Transaction currentTransaction;
+	public String callId;
 	
+	
+
+	public String getCallId() {
+		return callId;
+	}
+
+	public void setCallId(String callId) {
+		this.callId = callId;
+	}
+
+	public abstract void resetLayer();
+
 	public void setUl(UserLayer ul) {
 		this.ul = ul;
 	}
@@ -38,7 +51,6 @@ public abstract class TransactionLayer {
 	public abstract void sendError(SIPMessage error);
 	
 	public abstract void cancelTimer();
-	
 	
 	public void sendRequest(SIPMessage message){
 		try {

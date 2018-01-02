@@ -5,8 +5,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import layers.TransactionLayer;
-import layers.Proxy.TransactionLayerProxy;
-import layers.UA.TransactionLayerUA;
 import mensajesSIP.ACKMessage;
 import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
@@ -35,25 +33,31 @@ public class ClientFSM {
 		this.task = null;
 	}
 	
+	public boolean isTerminated() {
+		return (currentState == ClientState.TERMINATED);
+	}
+	
 	public void sendACK(SIPMessage error) {
 		
 		ACKMessage ack = new ACKMessage();
-		ArrayList<String> myVias;
-		String destiantion;
+		ArrayList<String> myVias = transactionLayer.getMyVias();
+		String destination = transactionLayer.getDestination();
    	 	
-		if(transactionLayer instanceof TransactionLayerProxy) {
-			destiantion = ((TransactionLayerProxy)transactionLayer).getDestination();
-			ack.setDestination(destiantion);
-			myVias =  new ArrayList<String>();
-			myVias.add(((TransactionLayerProxy)transactionLayer).getMyStringVias());
-			ack.setVias(myVias);
-		}else if(transactionLayer instanceof TransactionLayerUA) {
-			destiantion = "sip:proxy@dominio.es";
-			ack.setDestination(destiantion);
-			myVias = ((TransactionLayerUA)transactionLayer).getMyVias();
-			ack.setVias(myVias);
-		}
+//		if(transactionLayer instanceof TransactionLayerProxy) {
+//			destiantion = ((TransactionLayerProxy)transactionLayer).getDestination();
+//			ack.setDestination(destiantion);
+//			myVias =  new ArrayList<String>();
+//			myVias.add(((TransactionLayerProxy)transactionLayer).getMyStringVias());
+//			ack.setVias(myVias);
+//		}else if(transactionLayer instanceof TransactionLayerUA) {
+//			destiantion = "sip:proxy@dominio.es";
+//			ack.setDestination(destiantion);
+//			myVias = ((TransactionLayerUA)transactionLayer).getMyVias();
+//			ack.setVias(myVias);
+//		}
    	 	
+		ack.setDestination(destination);
+		ack.setVias(myVias);
    	 	ack.setCallId(transactionLayer.getCallId());
 	 	ack.setToUri(error.getToUri());
 	 	ack.setFromUri(error.getFromUri());
@@ -114,6 +118,7 @@ public class ClientFSM {
 					System.out.println("CLIENT: CALLING -> TERMINATED");
 					currentState = ClientState.TERMINATED;
 					transactionLayer.sendToUser(message);
+					transactionLayer.resetLayer();
 				}else if (message instanceof NotFoundMessage || 
 						  message instanceof ProxyAuthenticationMessage ||
 						  message instanceof RequestTimeoutMessage ||
@@ -137,6 +142,7 @@ public class ClientFSM {
 					System.out.println("CLIENT: PROCEEDING -> TERMINATED");
 					currentState = ClientState.TERMINATED;
 					transactionLayer.sendToUser(message);
+					transactionLayer.resetLayer();
 				}else if (message instanceof NotFoundMessage || 
 						  message instanceof ProxyAuthenticationMessage ||
 						  message instanceof RequestTimeoutMessage ||

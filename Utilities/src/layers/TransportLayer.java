@@ -32,11 +32,13 @@ public abstract class TransportLayer {
 
 	public void recvFromNetwork(){
 
-		byte[] buf = new byte[2048];
-    	DatagramPacket p = new DatagramPacket(buf, buf.length);
+		byte[] buf;
+    	DatagramPacket p;
     	SIPMessage message;
     	while(true) {
     		try {
+    			buf = new byte[2048];
+    			p = new DatagramPacket(buf, buf.length);
     			datagramSocket.receive(p);
     			message = SIPMessage.parseMessage(new String(p.getData()));
     			System.out.println();
@@ -47,7 +49,7 @@ public abstract class TransportLayer {
     			System.out.println(message.toStringMessage());
     			System.out.println();
     			transactionLayer.recvFromTransport(message);
-				p.setData(buf, 0, buf.length);
+				//p.setData(buf, 0, buf.length);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

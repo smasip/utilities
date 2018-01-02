@@ -3,9 +3,7 @@ package fsm;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import fsm.ClientFSM.ClientState;
 import layers.TransactionLayer;
-import layers.Proxy.TransactionLayerProxy;
 import mensajesSIP.ACKMessage;
 import mensajesSIP.BusyHereMessage;
 import mensajesSIP.InviteMessage;
@@ -18,11 +16,11 @@ import mensajesSIP.SIPMessage;
 import mensajesSIP.ServiceUnavailableMessage;
 import mensajesSIP.TryingMessage;
 
-public class ServerFSM {
+public abstract class ServerFSM {
 	
 	public static enum ServerState {PROCEEDING, COMPLETED, TERMINATED}
 	public ServerState currentState;
-	public TransactionLayer transactionLayer;
+	protected TransactionLayer transactionLayer;
 	private Timer timer;
 	private TimerTask task;
 	
@@ -32,6 +30,10 @@ public class ServerFSM {
 		this.currentState = ServerState.TERMINATED;
 		this.timer = new Timer();
 		this.task = null;
+	}
+	
+	public boolean isTerminated() {
+		return (currentState == ServerState.TERMINATED);
 	}
 	
 	private void sendError(SIPMessage error) {
@@ -69,6 +71,8 @@ public class ServerFSM {
 		}
 	}
 	
+	public abstract void onInvite(InviteMessage invite);
+	
 	public void processMessage(SIPMessage message) {
 		
 		switch (currentState) {
@@ -78,11 +82,7 @@ public class ServerFSM {
 				if (message instanceof InviteMessage) {
 					System.out.println("SERVER: PROCEEDING -> PROCEEDING");
 					currentState = ServerState.PROCEEDING;
-					if(transactionLayer instanceof TransactionLayerProxy) {
-						TryingMessage tryingMessage = (TryingMessage) SIPMessage.createResponse(SIPMessage._100_TRYING, message);
-						transactionLayer.sendResponse(tryingMessage);
-					}
-					transactionLayer.sendToUser(message);
+					onInvite((InviteMessage)message);
 				}
 				
 				break;
@@ -104,6 +104,7 @@ public class ServerFSM {
 					System.out.println("SERVER: PROCEEDING -> TERMINATED");
 					currentState = ServerState.TERMINATED;
 					transactionLayer.sendResponse(message);
+					transactionLayer.resetLayer();
 				}
 				
 				break;
@@ -114,6 +115,7 @@ public class ServerFSM {
 					System.out.println("SERVER: COMPLETED -> TERMINATED");
 					currentState = ServerState.TERMINATED;
 					cancelTimer();
+					transactionLayer.resetLayer();
 				}
 				
 				break;

@@ -3,21 +3,26 @@ package layers;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
+import fsm.ClientFSM;
+import fsm.ServerFSM;
 import mensajesSIP.SIPMessage;
 
 
 public abstract class TransactionLayer {
 	
-	public UserLayer ul;
-	public TransportLayer transportLayer;
-	public InetAddress requestAddress;
-	public int requestPort;
-	public Transaction currentTransaction;
-	public String callId;
+	protected ClientFSM client;
+	protected ServerFSM server;
+	protected UserLayer ul;
+	protected TransportLayer transportLayer;
+	protected InetAddress requestAddress;
+	protected int requestPort;
+	protected Transaction currentTransaction;
+	protected String callId;
+	protected ArrayList<String> myVias;
+	protected String destination;
 	
-	
-
 	public String getCallId() {
 		return callId;
 	}
@@ -25,8 +30,22 @@ public abstract class TransactionLayer {
 	public void setCallId(String callId) {
 		this.callId = callId;
 	}
+	
+	public String getDestination() {
+		return destination;
+	}
 
-	public abstract void resetLayer();
+	public void setDestination(String destination) {
+		this.destination = destination;
+	}
+	
+	public ArrayList<String> getMyVias() {
+		return myVias;
+	}
+
+	public void setMyVias(ArrayList<String> myVias) {
+		this.myVias = myVias;
+	}
 
 	public void setUl(UserLayer ul) {
 		this.ul = ul;
@@ -35,22 +54,37 @@ public abstract class TransactionLayer {
 	public void setTransportLayer(TransportLayer transportLayer) {
 		this.transportLayer = transportLayer;
 	}
-
-	public abstract void recvFromTransport(SIPMessage message);
 	
+	public void setRequestAddress(InetAddress requestAddress) {
+		this.requestAddress = requestAddress;
+	}
+
+	public void setRequestPort(int requestPort) {
+		this.requestPort = requestPort;
+	}
+
 	public void sendToUser(SIPMessage message) {
 		ul.recvFromTransaction(message);
 	}
-	
-	public abstract void recvRequestFromUser(SIPMessage request, InetAddress requestAddress, int requestPort);
-	
-	public abstract void recvResponseFromUser(SIPMessage response);
-	
-	public abstract void sendACK(SIPMessage error);
-	
-	public abstract void sendError(SIPMessage error);
-	
-	public abstract void cancelTimer();
+
+	public void recvResponseFromUser(SIPMessage response) {
+			
+		switch (currentTransaction) {
+		
+			case INVITE_TRANSACTION:
+				server.processMessage(response);
+				break;
+				
+			case NO_TRANSACTION:
+				sendResponse(response);
+				break;
+				
+			default:
+				break;
+		
+		}
+		
+	}
 	
 	public void sendRequest(SIPMessage message){
 		try {
@@ -73,5 +107,11 @@ public abstract class TransactionLayer {
 			e.printStackTrace();
 		}
 	}
+	
+	public abstract void resetLayer();
+	
+	public abstract void recvFromTransport(SIPMessage message);
+	
+	public abstract void recvRequestFromUser(SIPMessage request);
 
 }

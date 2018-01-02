@@ -653,6 +653,7 @@ public abstract class SIPMessage{
     }
     
     public static SIPMessage createResponse(int statusCode, SIPMessage request, String contact) {
+    	
     	 ArrayList<String> vias = request.getVias();
     	 String toUri = request.getToUri();
     	 String fromUri = request.getFromUri();
@@ -674,17 +675,22 @@ public abstract class SIPMessage{
 				if(request instanceof InviteMessage) {
 					route = ((InviteMessage)request).getRecordRoute();
 					((RingingMessage)response).setRecordRoute(route);
+					((RingingMessage)response).setContact(contact);
 				}
 				break;
 				
 			case _200_OK:
 				
 				response = new OKMessage();
- 
+				SDPMessage sdp = null;;
+				int contentLength = 0;
+				
 				((OKMessage)response).setContentLength(0);
 				((OKMessage)response).setExpires("7200");
 				if(request instanceof InviteMessage) {
 					route = ((InviteMessage)request).getRecordRoute();
+					sdp = ((InviteMessage)request).getSdp();
+					contentLength = ((InviteMessage)request).getContentLength();
 					((OKMessage)response).setRecordRoute(route);
 					((OKMessage)response).setContact(contact);
 				}else if(request instanceof RegisterMessage) {
@@ -692,6 +698,9 @@ public abstract class SIPMessage{
 				}else if(request instanceof ByeMessage) {
 					((OKMessage)response).setContact(contact);
 				}
+				
+				((OKMessage)response).setContentLength(contentLength);
+				((OKMessage)response).setSdp(sdp);
 				
 				break;
 				
@@ -721,6 +730,7 @@ public abstract class SIPMessage{
 			case _503_SERVICE_UNABAILABLE:
 				response = new ServiceUnavailableMessage();
 				((ServiceUnavailableMessage)response).setContentLength(0);
+				break;
 				
 			default:
 				response = null;
